@@ -12,3 +12,5 @@ matplotlib==3.10.1
 seaborn==0.13.2
 optuna==4.7.0
 lightgbm==4.6.0
+tinkoff-invest
+python-dotenv
