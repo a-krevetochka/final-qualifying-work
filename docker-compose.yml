@@ -1,0 +1,41 @@
+version: "3.9"
+
+services:
+
+  postgres:
+    image: postgres:15
+    container_name: stockdb
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  ml:
+    build:
+      context: ./ml
+      dockerfile: Dockerfile
+    container_name: ml_service
+    restart: always
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      TINKOFF_TOKEN: ${TINKOFF_TOKEN}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./ml/model:/app/model
+
+volumes:
+  postgres_data:
