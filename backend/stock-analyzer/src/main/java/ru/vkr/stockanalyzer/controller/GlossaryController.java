@@ -22,7 +22,7 @@ public class GlossaryController {
         return ResponseEntity.ok(glossaryService.getAll(category, q));
     }
 
-    @GetMapping("/{term}")
+    @GetMapping("/{term:.+}")
     public ResponseEntity<GlossaryDto> getByTerm(@PathVariable String term) {
         return ResponseEntity.ok(glossaryService.getByTerm(term));
     }

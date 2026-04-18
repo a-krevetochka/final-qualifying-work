@@ -2,6 +2,7 @@ package ru.vkr.stockanalyzer.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -50,7 +51,7 @@ public class AuthService {
         );
 
         User user  = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new RuntimeException("Пользователь не найден"));
+                .orElseThrow(() -> new BadCredentialsException("Пользователь не найден"));
         String token = jwtService.generateToken(user);
 
         return AuthResponse.builder()
@@ -63,7 +64,7 @@ public class AuthService {
     public AuthResponse me(String token) {
         String email = jwtService.extractUsername(token);
         User user    = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Пользователь не найден"));
+                .orElseThrow(() -> new BadCredentialsException("Пользователь не найден"));
 
         return AuthResponse.builder()
                 .token(token)

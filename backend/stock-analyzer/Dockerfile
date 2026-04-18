@@ -1,10 +1,11 @@
-FROM eclipse-temurin:21-jdk-slim AS builder
+FROM amazoncorretto:21-alpine AS builder
 WORKDIR /app
+RUN apk add --no-cache maven
 COPY pom.xml .
 COPY src ./src
-RUN apt-get update && apt-get install -y maven && mvn clean package -DskipTests
+RUN mvn clean package -DskipTests
 
-FROM eclipse-temurin:21-jre-slim
+FROM amazoncorretto:21-alpine
 WORKDIR /app
 COPY --from=builder /app/target/stock-analyzer-0.0.1-SNAPSHOT.jar app.jar
 EXPOSE 8080

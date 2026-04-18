@@ -39,7 +39,7 @@ services:
 
   backend:
     build:
-      context: ./backend
+      context: ./backend/stock-analyzer
       dockerfile: Dockerfile
     container_name: backend_service
     restart: always
@@ -52,7 +52,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       ML_SERVICE_URL: http://ml:8000
       JWT_SECRET: ${JWT_SECRET}
-      SPRING_PROFILE: ${SPRING_PROFILE:prod}
+      SPRING_PROFILE: prod
     depends_on:
       postgres:
         condition: service_healthy
