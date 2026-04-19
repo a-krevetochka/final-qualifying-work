@@ -1,0 +1,9 @@
+spring:
+  jpa:
+    show-sql: true
+
+logging:
+  level:
+    ru.vkr: DEBUG
+    org.springframework.web: DEBUG
+    org.springframework.security: DEBUG

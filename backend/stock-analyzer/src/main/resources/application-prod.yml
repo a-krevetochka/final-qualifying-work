@@ -1,0 +1,9 @@
+spring:
+  jpa:
+    show-sql: false
+
+logging:
+  level:
+    ru.vkr: WARN
+    org.springframework.web: WARN
+    org.springframework.security: WARN
