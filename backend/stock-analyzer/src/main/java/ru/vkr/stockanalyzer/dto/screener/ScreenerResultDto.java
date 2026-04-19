@@ -7,6 +7,7 @@ import lombok.Data;
 @Builder
 public class ScreenerResultDto {
     private String ticker;
+    private String name;
     private Double currentPrice;
     private Double grahamScore;
     private String interpretation;

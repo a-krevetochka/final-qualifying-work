@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Float, Date, DateTime, BigInteger, UniqueConstraint, Index
+from sqlalchemy import Column, Integer, String, Float, Date, DateTime, BigInteger, UniqueConstraint, Index, Boolean
 from sqlalchemy.sql import func
 from database import Base
 
@@ -88,4 +88,21 @@ class Consensus(Base):
     __table_args__ = (
         Index("ix_consensus_ticker", "ticker"),
         Index("ix_consensus_updated_at", "updated_at"),
+    )
+
+class Security(Base):
+    __tablename__ = "securities"
+
+    id             = Column(Integer, primary_key=True)
+    ticker         = Column(String(10), nullable=False, unique=True)
+    name           = Column(String(255))
+    sector         = Column(String(50))
+    instrument_uid = Column(String(100))
+    asset_uid      = Column(String(100))
+    listed         = Column(Boolean, default=True)
+    updated_at     = Column(DateTime, server_default=func.now())
+
+    __table_args__ = (
+        Index("ix_securities_ticker", "ticker"),
+        Index("ix_securities_sector", "sector"),
     )

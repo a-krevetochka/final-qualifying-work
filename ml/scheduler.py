@@ -161,10 +161,11 @@ async def job_daily():
 
 async def job_weekly():
     logger.info("Запуск еженедельного обновления...")
-    db      = SessionLocal()
-    tickers = get_all_tickers(db)
-    logger.info(f"Тикеров в БД: {len(tickers)}")
+    db = SessionLocal()
     try:
+        from repository import SecuritiesRepository
+        tickers = SecuritiesRepository.get_all_tickers(db)
+        logger.info(f"Тикеров в securities: {len(tickers)}")
         for ticker in tickers:
             update_fundamentals(db, ticker)
             update_consensus(db, ticker)

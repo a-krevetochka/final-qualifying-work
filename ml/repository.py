@@ -2,9 +2,7 @@ import pandas as pd
 from datetime import date, datetime, timedelta
 from sqlalchemy.orm import Session
 from sqlalchemy.dialects.postgresql import insert
-
-from models import Candle, Macro, Instrument, Fundamental, Consensus
-
+from models import Candle, Macro, Instrument, Fundamental, Consensus, Security
 
 class CandleRepository:
 
@@ -164,3 +162,30 @@ class ConsensusRepository:
         )
         db.execute(stmt)
         db.commit()
+
+
+class SecuritiesRepository:
+
+    @staticmethod
+    def get_all(db: Session) -> list:
+        return db.query(Security).filter(Security.listed == True).all()
+
+    @staticmethod
+    def get_by_sector(db: Session, sector: str) -> list:
+        return db.query(Security).filter(
+            Security.sector == sector,
+            Security.listed == True
+        ).all()
+
+    @staticmethod
+    def get_tickers_by_sector(db: Session, sector: str) -> list[str]:
+        rows = db.query(Security.ticker).filter(
+            Security.sector == sector,
+            Security.listed == True
+        ).all()
+        return [r[0] for r in rows]
+
+    @staticmethod
+    def get_all_tickers(db: Session) -> list[str]:
+        rows = db.query(Security.ticker).filter(Security.listed == True).all()
+        return [r[0] for r in rows]

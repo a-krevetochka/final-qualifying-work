@@ -243,3 +243,110 @@ async def trigger_daily_update():
 async def trigger_weekly_update():
     await job_weekly()
     return {"status": "done"}
+
+@app.get("/screener")
+async def screener(
+    sector: str = None,
+    pe_max: float = None,
+    div_min: float = None,
+    sort: str = None,
+    page: int = 0,
+    size: int = 20,
+    db: Session = Depends(get_db)
+):
+    from repository import FundamentalRepository, CandleRepository, SecuritiesRepository
+    import asyncio
+
+    if sector:
+        tickers = SecuritiesRepository.get_tickers_by_sector(db, sector)
+    else:
+        tickers = SecuritiesRepository.get_all_tickers(db)
+
+    all_securities = {s.ticker: s.name for s in SecuritiesRepository.get_all(db)}
+
+    results = []
+
+    for ticker in tickers:
+        try:
+            fund = FundamentalRepository.get(db, ticker)
+
+            pe  = fund.pe_ratio  if fund else None
+            div = fund.div_yield if fund else None
+
+            # Фильтр P/E
+            if pe_max is not None:
+                if pe is None or pe <= 0 or pe > pe_max:
+                    continue
+
+            # Фильтр дивидендов
+            if div_min is not None:
+                if div is None or div <= 0 or div < div_min:
+                    continue
+
+            df_candles    = CandleRepository.get_candles(db, ticker, days=5)
+            current_price = float(df_candles["Close"].iloc[-1]) if not df_candles.empty else None
+
+            results.append({
+                "ticker":        ticker,
+                "name":          all_securities.get(ticker, ticker),
+                "current_price": current_price,
+                "fundamental": {
+                    "score":          fund.graham_score    if fund else None,
+                    "interpretation": fund.interpretation  if fund else None,
+                    "raw": {
+                        "pe_ratio":  pe,
+                        "div_yield": div,
+                    }
+                } if fund else None,
+                "technical": None,
+            })
+
+        except Exception:
+            continue
+
+    if pe_max is None and div_min is None:
+        existing = {r["ticker"] for r in results}
+        for ticker in tickers:
+            if ticker not in existing:
+                results.append({
+                    "ticker":        ticker,
+                    "name":          all_securities.get(ticker, ticker),
+                    "current_price": None,
+                    "fundamental":   None,
+                    "technical":     None,
+                    "source":        "pending",
+                })
+
+    # Сортировка
+    if sort == "graham_score":
+        results.sort(
+            key=lambda x: (x.get("fundamental") or {}).get("score") or 0,
+            reverse=True
+        )
+    elif sort == "div_yield":
+        results.sort(
+            key=lambda x: ((x.get("fundamental") or {}).get("raw") or {}).get("div_yield") or 0,
+            reverse=True
+        )
+
+    total = len(results)
+    start = page * size
+    end   = start + size
+
+    async def load_missing_candles():
+        new_db = SessionLocal()
+        try:
+            for r in results[start:end]:
+                if r["current_price"] is None:
+                    update_candles(new_db, r["ticker"])
+        finally:
+            new_db.close()
+
+    asyncio.create_task(load_missing_candles())
+
+    return {
+        "total":   total,
+        "page":    page,
+        "size":    size,
+        "results": results[start:end],
+    }
