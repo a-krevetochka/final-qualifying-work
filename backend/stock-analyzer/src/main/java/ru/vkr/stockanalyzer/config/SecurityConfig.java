@@ -54,8 +54,12 @@ public class SecurityConfig {
                                 "/api/stocks/**",
                                 "/api/screener/**",
                                 "/api/compare/**",
-                                "/api/glossary/**"
+                                "/api/glossary/**",
+                                "/actuator/prometheus",
+                                "/actuator/health",
+                                "/actuator/metrics"
                         ).permitAll()
+
                         .requestMatchers("/api/favorites/**").authenticated()
                         .requestMatchers("/api/user/**").authenticated()
                         .anyRequest().authenticated()

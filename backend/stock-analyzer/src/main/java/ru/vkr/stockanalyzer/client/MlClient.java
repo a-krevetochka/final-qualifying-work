@@ -2,6 +2,7 @@ package ru.vkr.stockanalyzer.client;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import ru.vkr.stockanalyzer.dto.compare.StockCompareItemDto;
@@ -37,6 +38,7 @@ public class MlClient {
         }
     }
 
+    @Cacheable(value = "compare", key = "#ticker")
     public StockCompareItemDto getCompareItem(String ticker) {
         String url = mlUrl + "/analysis/" + ticker;
         try {

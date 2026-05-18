@@ -54,3 +54,16 @@ logging:
   level:
     ru.vkr: INFO
     org.springframework.web: WARN
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: prometheus,health,metrics
+  endpoint:
+    prometheus:
+      enabled: true
+  metrics:
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
